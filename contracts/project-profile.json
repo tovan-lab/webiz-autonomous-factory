@@ -1,0 +1,15 @@
+{
+  "profile": "crud-webapp",
+  "allowed_profiles": [
+    "static-marketing",
+    "crud-webapp",
+    "enterprise-saas"
+  ],
+  "compliance": {
+    "vietnam_decree_13_2023_nd_cp": true,
+    "wcag_level": "AA",
+    "error_standard": "RFC-9457",
+    "min_test_coverage_percent": 90,
+    "min_mutation_score_percent": 75
+  }
+}

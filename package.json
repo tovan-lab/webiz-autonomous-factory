@@ -1,0 +1,18 @@
+{
+  "name": "webiz-autonomous-software-factory",
+  "version": "4.0.0",
+  "private": true,
+  "description": "Webiz - Web For Your Biz | Deterministic Multi-Agent Software Factory by Pham Trong (https://phamtrong.click)",
+  "author": "Phạm Trọng <https://phamtrong.click>",
+  "type": "module",
+  "scripts": {
+    "verify": "node scripts/harness/verify-pipeline.mjs",
+    "verify:attest": "node scripts/harness/verify-pipeline.mjs --attest",
+    "selftest:chaos": "node scripts/harness/selftest-chaos.mjs",
+    "contract:seal": "node scripts/harness/contract-lock.mjs --seal",
+    "contract:verify": "node scripts/harness/contract-lock.mjs --verify",
+    "scope:check": "node scripts/harness/enforce-scope.mjs",
+    "inbox:sanitize": "node scripts/harness/sanitize-inbox.mjs",
+    "blast:calc": "node scripts/harness/calc-blast-radius.mjs"
+  }
+}

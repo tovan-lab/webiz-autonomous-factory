@@ -1,0 +1,12 @@
+{
+  "schema_version": "4.0.0",
+  "min_requirements": 1,
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "title": "Healthcheck & RFC 9457 Problem Details Contract Compliance",
+      "priority": "BLOCKER",
+      "category": "core-reliability"
+    }
+  ]
+}

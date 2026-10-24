@@ -1,0 +1,36 @@
+name: Webiz Deterministic Factory CI/CD
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    branches: [main]
+
+jobs:
+  deterministic-verification-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run 3-Stage Chaos Self-Test
+        run: node scripts/harness/selftest-chaos.mjs
+
+      - name: Run Full Deterministic Pipeline Gate & Cryptographic Attestation
+        run: node scripts/harness/verify-pipeline.mjs --attest
+
+  deploy-production:
+    needs: deterministic-verification-gate
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: production-human-approval-gate
+      url: https://phamtrong.click
+    steps:
+      - name: Release Verified Build to Production
+        run: echo "Production release approved by Human Gate and verified by Inquisitor Attestation."

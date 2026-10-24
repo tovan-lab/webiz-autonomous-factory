@@ -1,0 +1,14 @@
+{
+  "brand": "Webiz - Web For Your Biz",
+  "required_states": [
+    "loading_skeleton",
+    "empty_state",
+    "error_rfc9457_retry",
+    "data_ready"
+  ],
+  "i18n_locales": [
+    "vi-VN",
+    "en-US"
+  ],
+  "accessibility": "WCAG-2.1-AA"
+}

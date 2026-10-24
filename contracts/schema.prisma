@@ -1,0 +1,20 @@
+// SINGLE SOURCE OF TRUTH DATABASE CONTRACT (Prisma Schema)
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model ConsentAuditLog {
+  id          String   @id @default(cuid())
+  subjectId   String
+  consentType String
+  granted     Boolean
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  @@index([subjectId, createdAt])
+}

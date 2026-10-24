@@ -1,0 +1,80 @@
+{
+  "version": "4.0.0-deterministic",
+  "enforced_by": "scripts/harness/enforce-scope.mjs",
+  "agents": {
+    "00-chief-architect": {
+      "write_scope": [
+        "contracts/**",
+        ".agent/locks/**",
+        ".antigravity/locks/**"
+      ],
+      "forbidden_scope": [
+        "workspace/**",
+        "inquisitor-vault/traceability-status.json"
+      ]
+    },
+    "01-backend-data-engineer": {
+      "write_scope": [
+        "workspace/database/**",
+        "workspace/backend/**",
+        "infra/docker-compose.test.yml",
+        "contracts/ccr/**"
+      ],
+      "forbidden_scope": [
+        "contracts/PRD_SPEC.md",
+        "contracts/openapi.yaml",
+        "contracts/schema.prisma",
+        "contracts/traceability-spec.json",
+        "inquisitor-vault/**"
+      ]
+    },
+    "02-frontend-artisan": {
+      "write_scope": [
+        "workspace/frontend/**",
+        "contracts/ccr/**"
+      ],
+      "forbidden_scope": [
+        "contracts/PRD_SPEC.md",
+        "contracts/openapi.yaml",
+        "contracts/schema.prisma",
+        "workspace/backend/**",
+        "inquisitor-vault/**"
+      ]
+    },
+    "03-secops-auditor": {
+      "write_scope": [
+        "inquisitor-vault/security-tests/**",
+        "BACKLOG.md"
+      ],
+      "forbidden_scope": [
+        "workspace/backend/src/**",
+        "workspace/frontend/src/**",
+        "contracts/**"
+      ]
+    },
+    "99-inquisitor-qa": {
+      "write_scope": [
+        "inquisitor-vault/**",
+        "BACKLOG.md"
+      ],
+      "forbidden_scope": [
+        "workspace/**",
+        "contracts/PRD_SPEC.md",
+        "contracts/openapi.yaml",
+        "contracts/schema.prisma",
+        "contracts/traceability-spec.json"
+      ]
+    },
+    "04-release-sre": {
+      "write_scope": [
+        "infra/**",
+        ".github/workflows/**"
+      ],
+      "forbidden_scope": [
+        "workspace/**",
+        "contracts/**",
+        "inquisitor-vault/**"
+      ]
+    }
+  }
+}

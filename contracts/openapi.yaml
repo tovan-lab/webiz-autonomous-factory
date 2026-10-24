@@ -1,0 +1,51 @@
+openapi: 3.1.0
+info:
+  title: Webiz Contract-First API
+  version: 4.0.0
+  description: Standardized API with RFC 9457 Problem Details
+paths:
+  /api/v1/healthz:
+    get:
+      operationId: getSystemHealth
+      summary: System Liveness & Readiness Probe
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, version, timestamp]
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+                  version:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '500':
+          description: RFC 9457 Problem Details
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+components:
+  schemas:
+    ProblemDetails:
+      type: object
+      required: [type, title, status, detail, traceId]
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        traceId:
+          type: string
