@@ -1,6 +1,6 @@
 <div align="center">
 
-![Webiz - Web For Your Biz](./assets/webiz-banner.svg)
+![Webiz - Web For Your Biz](./assets/webiz-banner.mp4)
 
 # Webiz Autonomous Factory
 
