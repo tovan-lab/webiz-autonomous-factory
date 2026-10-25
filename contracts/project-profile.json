@@ -1,12 +1,19 @@
 {
-  "profile": "crud-webapp",
+  "profile": "enterprise-saas",
   "allowed_profiles": [
     "static-marketing",
     "crud-webapp",
     "enterprise-saas"
   ],
+  "architecture_layers": {
+    "frontend": "nextjs-react-three-fiber",
+    "spatial_ui": "webiz-3d-spatial-ui",
+    "backend": "nodejs-typescript-rfc9457",
+    "database": "postgresql-prisma-3nf"
+  },
   "compliance": {
     "vietnam_decree_13_2023_nd_cp": true,
+    "vietnam_decree_141_2026_nd_cp": true,
     "wcag_level": "AA",
     "error_standard": "RFC-9457",
     "min_test_coverage_percent": 90,

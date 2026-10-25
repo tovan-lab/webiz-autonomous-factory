@@ -1,3 +1,6 @@
+// Health and RFC 9457 Problem Details Service
+// Compliant with contracts/openapi.yaml v5.0.0
+
 export interface HealthPayload {
   status: 'ok';
   version: string;
@@ -27,9 +30,10 @@ export function createProblemDetails(params: {
   detail: string;
   instance: string;
   traceId: string;
+  type?: string;
 }): ProblemDetailsRFC9457 {
   return {
-    type: `https://httpstatuses.io/${params.status}`,
+    type: params.type ?? `https://httpstatuses.io/${params.status}`,
     title: params.title,
     status: params.status,
     detail: params.detail,

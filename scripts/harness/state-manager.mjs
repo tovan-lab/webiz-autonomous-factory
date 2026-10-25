@@ -76,3 +76,33 @@ export function recordDefect(agent, severity, ruleId, relFilePath, detail) {
     retryCount: current.count
   };
 }
+
+if (process.argv[1]?.endsWith('state-manager.mjs')) {
+  initExternalState();
+  const mode = process.argv[2] || '--status';
+  const cbPath = path.join(STATE_DIR, 'circuit-breaker.json');
+  const rejPath = path.join(STATE_DIR, 'rejection-log.json');
+
+  if (mode === '--status') {
+    const cb = JSON.parse(fs.readFileSync(cbPath, 'utf8'));
+    const rej = JSON.parse(fs.readFileSync(rejPath, 'utf8'));
+    console.log('📊 [CIRCUIT BREAKER STATUS]');
+    console.log(`- Trạng thái cầu chì: ${cb.status}`);
+    console.log(`- Số lỗi đang theo dõi: ${Object.keys(cb.fingerprints).length}`);
+    console.log(`- Active Blockers: ${rej.active_blockers.length}`);
+    console.log(JSON.stringify(cb, null, 2));
+  } else if (mode === '--reset') {
+    fs.writeFileSync(cbPath, JSON.stringify({
+      schema_version: '4.0.0',
+      max_retries_per_fingerprint: 3,
+      status: 'CLOSED_HEALTHY',
+      fingerprints: {}
+    }, null, 2), 'utf8');
+    fs.writeFileSync(rejPath, JSON.stringify({
+      schema_version: '4.0.0',
+      active_blockers: [],
+      history: []
+    }, null, 2), 'utf8');
+    console.log('🔄 [CIRCUIT BREAKER RESET] Đã đặt lại trạng thái cầu chì về CLOSED_HEALTHY.');
+  }
+}

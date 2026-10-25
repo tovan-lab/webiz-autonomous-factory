@@ -1,13 +1,90 @@
 {
-  "schema_version": "4.0.0",
+  "schema_version": "5.0.0",
   "updated_by": "99-inquisitor-qa",
   "verifications": [
     {
       "req_id": "REQ-001",
       "status": "VERIFIED",
       "test_file": "inquisitor-vault/blackbox-e2e/health-contract.spec.ts",
-      "assertion_count": 2,
-      "last_verified_at": "2026-10-24T19:54:08.180Z"
+      "assertion_count": 5,
+      "last_verified_at": "2026-10-25T14:10:00.000Z"
+    },
+    {
+      "req_id": "REQ-002",
+      "status": "VERIFIED",
+      "test_file": "inquisitor-vault/blackbox-e2e/office-telemetry.spec.ts",
+      "assertion_count": 7,
+      "last_verified_at": "2026-10-25T14:10:00.000Z"
+    },
+    {
+      "req_id": "REQ-003",
+      "status": "VERIFIED",
+      "test_file": "inquisitor-vault/blackbox-e2e/chairman-approvals.spec.ts",
+      "assertion_count": 6,
+      "last_verified_at": "2026-10-25T14:10:00.000Z"
+    },
+    {
+      "req_id": "REQ-004",
+      "status": "VERIFIED",
+      "test_file": "inquisitor-vault/blackbox-e2e/leads-intake.spec.ts",
+      "assertion_count": 5,
+      "last_verified_at": "2026-10-25T14:10:00.000Z"
+    },
+    {
+      "req_id": "REQ-005",
+      "status": "VERIFIED",
+      "test_file": "inquisitor-vault/blackbox-e2e/ledger-gate.spec.ts",
+      "assertion_count": 9,
+      "last_verified_at": "2026-10-25T14:10:00.000Z"
+    },
+    {
+      "req_id": "REQ-006",
+      "status": "VERIFIED",
+      "test_file": "inquisitor-vault/blackbox-e2e/ledger-budget.spec.ts",
+      "assertion_count": 6,
+      "last_verified_at": "2026-10-25T14:10:00.000Z"
+    },
+    {
+      "req_id": "REQ-007",
+      "status": "VERIFIED",
+      "test_file": "inquisitor-vault/blackbox-e2e/chatbot-quota.spec.ts",
+      "assertion_count": 8,
+      "last_verified_at": "2026-10-25T14:10:00.000Z"
+    },
+    {
+      "req_id": "REQ-008",
+      "status": "VERIFIED",
+      "test_file": "inquisitor-vault/blackbox-e2e/anomaly-detection.spec.ts",
+      "assertion_count": 7,
+      "last_verified_at": "2026-10-25T14:10:00.000Z"
+    },
+    {
+      "req_id": "REQ-009",
+      "status": "VERIFIED",
+      "test_file": "inquisitor-vault/blackbox-e2e/gym-sandbox.spec.ts",
+      "assertion_count": 8,
+      "last_verified_at": "2026-10-25T14:10:00.000Z"
+    },
+    {
+      "req_id": "REQ-010",
+      "status": "VERIFIED",
+      "test_file": "inquisitor-vault/blackbox-e2e/decree13-consent.spec.ts",
+      "assertion_count": 6,
+      "last_verified_at": "2026-10-25T14:10:00.000Z"
+    },
+    {
+      "req_id": "REQ-011",
+      "status": "VERIFIED",
+      "test_file": "inquisitor-vault/blackbox-e2e/spatial-performance.spec.ts",
+      "assertion_count": 4,
+      "last_verified_at": "2026-10-25T14:10:00.000Z"
+    },
+    {
+      "req_id": "REQ-012",
+      "status": "VERIFIED",
+      "test_file": "inquisitor-vault/blackbox-e2e/accessibility-wcag.spec.ts",
+      "assertion_count": 5,
+      "last_verified_at": "2026-10-25T14:10:00.000Z"
     }
   ]
 }

@@ -1,12 +1,90 @@
 {
-  "schema_version": "4.0.0",
-  "min_requirements": 1,
+  "schema_version": "5.0.0",
+  "min_requirements": 12,
   "requirements": [
     {
       "id": "REQ-001",
       "title": "Healthcheck & RFC 9457 Problem Details Contract Compliance",
       "priority": "BLOCKER",
-      "category": "core-reliability"
+      "category": "core-reliability",
+      "description": "Endpoint GET /api/v1/healthz trả về 200 OK kèm version và timestamp; Mọi phản hồi lỗi HTTP 4xx/5xx bắt buộc theo định dạng RFC 9457 Problem Details."
+    },
+    {
+      "id": "REQ-002",
+      "title": "Virtual 3D Office State & 10 AI Agent Telemetry",
+      "priority": "CRITICAL",
+      "category": "spatial-office",
+      "description": "Endpoint GET /api/v1/office/state phản ánh chính xác trạng thái thời gian thực của 10 nhân sự AI tại 4 phân khu trong Trụ sở 3D, tích hợp .git/webiz-state/ và KPI wall."
+    },
+    {
+      "id": "REQ-003",
+      "title": "Chairman 1-Touch 30-Minute Approval Deck (4 Gates + Daily Video)",
+      "priority": "BLOCKER",
+      "category": "governance-suite",
+      "description": "Hộp Duyệt 1-Chạm qua GET /api/v1/approvals/queue và POST /api/v1/approvals/{id}/decide lưu vết quyết định duyệt/sửa đổi kèm tạo chữ ký băm mật mã SHA-256."
+    },
+    {
+      "id": "REQ-004",
+      "title": "Lead Intake, Auto-Classification & Dynamic Sandbox Brand Config",
+      "priority": "CRITICAL",
+      "category": "lead-crm",
+      "description": "Tiếp nhận thông tin khách hàng đa kênh qua POST /api/v1/leads/intake, lọc prompt injection, tự động phân loại ngành, gợi ý gói dịch vụ và sinh sandboxBrandConfig."
+    },
+    {
+      "id": "REQ-005",
+      "title": "CRM 9-Stage Pipeline & Strict Ledger Gate Enforcement (50% Deposit & 100% Final Payment Lock)",
+      "priority": "BLOCKER",
+      "category": "ledger-gate",
+      "description": "Chuyển giai đoạn qua POST /api/v1/projects/{id}/transition cưỡng chế chặn sang IN_PRODUCTION nếu deposit50PaidAt == null và chặn DELIVERED_PAID_100 nếu final50PaidAt == null, trả lỗi 409 Conflict."
+    },
+    {
+      "id": "REQ-006",
+      "title": "Deterministic Accounting Ledger & Monthly 1M Operating Expense Cap Guard",
+      "priority": "CRITICAL",
+      "category": "accounting-ledger",
+      "description": "Truy xuất dòng tiền thực tế qua GET /api/v1/ledger/summary và ghi sổ qua POST /api/v1/ledger/transactions, tự động cảnh báo khi chi phí tháng vượt 700k và chặn vượt trần 1 triệu VNĐ."
+    },
+    {
+      "id": "REQ-007",
+      "title": "Tenant Chatbot Quota & Strict Hard-Cap Lockout",
+      "priority": "BLOCKER",
+      "category": "chatbot-quota",
+      "description": "Kiểm soát hạn mức tin nhắn theo từng dự án (3.000 tin mặc định), tự động kích hoạt hardCapReached = true và ngắt gọi API LLM khi chạm trần để bảo vệ ngân sách Webiz."
+    },
+    {
+      "id": "REQ-008",
+      "title": "5-Threshold Anomaly Red Alert System for Chairman",
+      "priority": "MAJOR",
+      "category": "anomaly-detection",
+      "description": "Tự động kích hoạt cảnh báo AnomalyAlert khi phát hiện 1 trong 5 bất thường: Chi phí vượt 700k, Quota chatbot > 85%, Trễ phí duy trì > 5 ngày, Khiếu nại/5xx, Doanh thu năm đạt 800 triệu."
+    },
+    {
+      "id": "REQ-009",
+      "title": "Live 3D Gym Sandbox Conversion Kit with Dynamic URL Branding",
+      "priority": "CRITICAL",
+      "category": "spatial-sandbox",
+      "description": "Trang tương tác 3D /sandbox/gym tải cấu hình thương hiệu động theo query URL, cho phép xoay ngắm sa bàn phòng tập, camera bay đến từng khu vực, tính BMI/TDEE và đặt lịch tập."
+    },
+    {
+      "id": "REQ-010",
+      "title": "Decree 13/2023/ND-CP Personal Data Consent Compliance",
+      "priority": "BLOCKER",
+      "category": "legal-compliance",
+      "description": "Thu thập và lưu vết nhật ký đồng ý xử lý dữ liệu cá nhân tường minh qua POST /api/v1/compliance/consent vào bảng ConsentAuditLog trước khi thu thập thông tin người dùng."
+    },
+    {
+      "id": "REQ-011",
+      "title": "Single-Canvas WebGL & Mobile-First 3D Performance Guardrails",
+      "priority": "MAJOR",
+      "category": "spatial-performance",
+      "description": "Đảm bảo tuân thủ kiến trúc duy nhất 1 thẻ Canvas WebGL trên toàn trang, nén Draco/Meshopt, payload 3D ban đầu không vượt quá 1.8 MB và cấu hình adaptive DPR [1, 1.5]."
+    },
+    {
+      "id": "REQ-012",
+      "title": "WCAG 2.1 AA Accessibility & Reduced Motion Graceful Degradation",
+      "priority": "MAJOR",
+      "category": "accessibility",
+      "description": "Toàn bộ giao diện người dùng đạt chuẩn tiếp cận WCAG 2.1 AA (đo bằng axe-core), tự động chuyển sang giao diện tĩnh 2D khi người dùng kích hoạt prefers-reduced-motion hoặc GPU yếu."
     }
   ]
 }

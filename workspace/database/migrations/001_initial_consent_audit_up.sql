@@ -7,5 +7,5 @@ CREATE TABLE IF NOT EXISTS "ConsentAuditLog" (
   "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS "ConsentAuditLog_subjectId_createdAt_idx"
+CREATE INDEX IF NOT EXISTS "ConsentAuditLog_subjectId_createdAt_idx"
   ON "ConsentAuditLog"("subjectId", "createdAt");

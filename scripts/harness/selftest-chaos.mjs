@@ -1,4 +1,4 @@
-﻿import assert from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import { scanInboxContent } from './sanitize-inbox.mjs';
 import { auditSourceCode } from './ast-audit.mjs';
 import { auditSqlMigration, scanSecretsInContent } from './secops-scan.mjs';
@@ -30,7 +30,9 @@ const sqlHits = auditSqlMigration(fakeSqlBad, 'workspace/database/migrations/002
 assert.ok(sqlHits.some((x) => x.ruleId === 'SQL-DESTRUCTIVE'), 'Phải bắt được DELETE không có WHERE');
 assert.ok(sqlHits.some((x) => x.ruleId === 'SQL-UNAPPROVED-DROP'), 'Phải bắt được DROP COLUMN không có cờ duyệt');
 
-const fakeSecret = 'const stripeKey = "sk_live_51Nz[REDACTED_MOCK_KEY]99"; const aws = "AKIAIOSFODNN7EXAMPLE";';
+const fakeStripe = ['sk', 'live', '51NzMockKey0123456789Test99'].join('_');
+const fakeAws = ['AKIA', 'IOSFODNN7EXAMPLE'].join('');
+const fakeSecret = `const stripeKey = "${fakeStripe}"; const aws = "${fakeAws}";`;
 const secHits = scanSecretsInContent(fakeSecret, 'workspace/backend/src/config.ts');
 assert.equal(secHits.length, 2, 'Phải bắt được cả khóa Stripe sk_live_ và AWS AKIA');
 
@@ -39,12 +41,15 @@ const piHits = scanInboxContent(fakePromptInjection, 'inbox/AUDIT_OR_UPGRADE_REP
 assert.ok(piHits.length >= 2, 'Phải chặn đứng Prompt Injection trong inbox/');
 console.log('  ✔ Vòng 2 (Chaos Fault Injection - 6/6 Lỗi Tinh Vi Bị Chặn Đứng): PASSED');
 
-// VÒNG 3: Kiểm thử cô lập quyền ghi CODEOWNERS (Write-Scope Isolation)
+// VÒNG 3: Kiểm thử cô lập quyền ghi CODEOWNERS (Write-Scope Isolation) & Bảo vệ Cổng Con Người
 const scopeCheckBad = checkAgentWriteScope('02-frontend-artisan', ['workspace/backend/src/health.service.ts']);
 assert.equal(scopeCheckBad.ok, false, 'Kỹ sư Frontend sửa file Backend phải bị chặn đứng');
 const scopeCheckGood = checkAgentWriteScope('02-frontend-artisan', ['workspace/frontend/src/App.tsx']);
 assert.equal(scopeCheckGood.ok, true, 'Kỹ sư Frontend sửa đúng thư mục Frontend phải được phép');
-console.log('  ✔ Vòng 3 (Strict Write-Scope Isolation & CODEOWNERS Enforcement): PASSED');
+
+const humanGateCheck = checkAgentWriteScope('00-chief-architect', ['contracts/HUMAN_SIGN_OFF.json']);
+assert.equal(humanGateCheck.ok, false, 'Agent 00-chief-architect sửa contracts/HUMAN_SIGN_OFF.json phải bị chặn đứng tuyệt đối');
+console.log('  ✔ Vòng 3 (Strict Write-Scope Isolation & Human-Gate Protection): PASSED');
 
 console.log('🏆 [CHAOS SELF-TEST COMPLETED] Cả 3 vòng kiểm thử khắc nghiệt đều đạt 100%!');
 

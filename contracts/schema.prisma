@@ -1,4 +1,7 @@
-// SINGLE SOURCE OF TRUTH DATABASE CONTRACT (Prisma Schema)
+// SINGLE SOURCE OF TRUTH DATABASE CONTRACT (Prisma Schema v5.0)
+// Webiz Autonomous AI Workforce & 3D Spatial Command Center
+// Architecture: 3NF Relational Contract with Strict Ledger Gates
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -8,13 +11,318 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// =========================================================================
+// 1. NHÓM 1: QUẢN TRỊ 10 NHÂN SỰ AI & TELEMETRY (TECH FACTORY + BIZOPS)
+// =========================================================================
+
+enum AgentDivision {
+  TECH_FACTORY
+  BIZ_OPS
+}
+
+enum AgentDeskZone {
+  ARCHITECT_DESK
+  ENGINEERING_BAY
+  QA_PODIUM
+  GROWTH_STUDIO
+  CONCIERGE_LOBBY
+  GOVERNANCE_VAULT
+}
+
+enum AgentStatus {
+  IDLE
+  WORKING
+  WAITING_CHAIRMAN_APPROVAL
+  IN_MEETING
+  BLOCKED_BY_HARNESS
+}
+
+model AgentEmployee {
+  id                 String               @id @default(cuid())
+  agentCode          String               @unique // e.g. "00-chief-architect", "B01-growth-director"
+  displayName        String               // Tên hiển thị
+  division           AgentDivision        // TECH_FACTORY hoặc BIZ_OPS
+  roleTitle          String               // Chức danh chuyên môn
+  accentColorHex     String               @default("#0DEEF3") // Màu nhận diện Cyberpunk
+  deskZone           AgentDeskZone        // Vị trí bàn trong không gian 3D
+  currentStatus      AgentStatus          @default(IDLE)
+  currentTaskSummary String?              // Tóm tắt công việc đang chạy
+  positionX          Float                @default(0.0) // Tọa độ X trong Trụ sở 3D
+  positionY          Float                @default(0.0) // Tọa độ Y
+  positionZ          Float                @default(0.0) // Tọa độ Z
+  avatarUrl          String?
+  lastActiveAt       DateTime             @default(now())
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  telemetryLogs      AgentTelemetryLog[]
+
+  @@index([division, currentStatus])
+  @@index([deskZone])
+}
+
+model AgentTelemetryLog {
+  id          String        @id @default(cuid())
+  agentId     String
+  agent       AgentEmployee @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentCode   String
+  logLevel    String        @default("INFO") // INFO, WARN, ERROR, CRITICAL
+  message     String
+  metadata    Json?
+  createdAt   DateTime      @default(now())
+
+  @@index([agentCode, createdAt])
+  @@index([logLevel, createdAt])
+}
+
+// =========================================================================
+// 2. NHÓM 2: CRM KHÁCH HÀNG 9 BƯỚC & CỔNG CỌC 50% (LEDGER GATE)
+// =========================================================================
+
+enum LeadSourceChannel {
+  FACEBOOK_MESSENGER
+  ZALO_OA
+  WEB_FORM
+  SCHEDULED_CALL
+}
+
+enum IndustryType {
+  GYM_FITNESS
+  SPA_BEAUTY
+  HOMESTAY_TRAVEL
+  FNB_RESTAURANT
+}
+
+enum PackageTier {
+  STARTER_3D     // 3.9tr VNĐ - phí duy trì 390k/tháng
+  GROWTH_AI      // 5.9tr VNĐ - phí duy trì 490k/tháng + 3.000 tin nhắn AI
+  PRO_AUTOMATION // 7.9tr VNĐ - phí duy trì 490k/tháng + 3.000 tin nhắn + VietQR
+}
+
+enum PipelineStage {
+  NEW
+  CONTACTED
+  QUALIFIED
+  SANDBOX_READY
+  QUOTED
+  CONTRACT_SENT
+  DEPOSIT_50_PAID
+  IN_PRODUCTION
+  DELIVERED_PAID_100
+  LOST
+}
+
+model Lead {
+  id             String            @id @default(cuid())
+  fullName       String
+  phoneNumber    String
+  email          String?
+  brandName      String
+  sourceChannel  LeadSourceChannel @default(WEB_FORM)
+  industry       IndustryType      @default(GYM_FITNESS)
+  preferredTier  PackageTier       @default(GROWTH_AI)
+  notes          String?
+  isQualified    Boolean           @default(false)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  clientProjects ClientProject[]
+
+  @@index([phoneNumber])
+  @@index([industry, sourceChannel])
+  @@index([createdAt])
+}
+
+model ClientProject {
+  id                  String                 @id @default(cuid())
+  leadId              String?
+  lead                Lead?                  @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  projectCode         String                 @unique // e.g. "PRJ-2026-GYM-001"
+  clientName          String
+  brandName           String
+  industry            IndustryType           @default(GYM_FITNESS)
+  packageTier         PackageTier            @default(GROWTH_AI)
+  pipelineStage       PipelineStage          @default(NEW)
+  sandboxBrandConfig  Json                   // brandName, primaryColor, secondaryColor, logoUrl, heroTagline, hotlineOrZalo, samplePackages
+  setupFeeVnd         Int                    @default(5900000)
+  monthlyRetainerVnd  Int                    @default(490000)
+  
+  // KHÓA CƯỠNG CHẾ CỌC 50% (LEDGER GATE)
+  deposit50AmountVnd  Int                    @default(2950000)
+  deposit50PaidAt     DateTime?              // Cưỡng chế: Phải có giá trị mới cho chuyển sang IN_PRODUCTION
+  
+  // KHÓA BÀN GIAO 100% (HANDOVER GATE)
+  final50AmountVnd    Int                    @default(2950000)
+  final50PaidAt       DateTime?              // Cưỡng chế: Phải có giá trị mới cho chuyển sang DELIVERED_PAID_100
+  
+  monthlyRetainerDueAt DateTime?
+  lastRetainerPaidAt   DateTime?
+  subdomain           String?
+  customDomain        String?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+
+  chatbotQuota        TenantChatbotQuota?
+  ledgerTransactions  LedgerTransaction[]
+  approvalItems       ChairmanApprovalItem[]
+  anomalyAlerts       AnomalyAlert[]
+
+  @@index([pipelineStage])
+  @@index([industry, packageTier])
+  @@index([deposit50PaidAt, final50PaidAt])
+}
+
+// =========================================================================
+// 3. NHÓM 3: HỘP DUYỆT 1-CHẠM 30 PHÚT CỦA CHỦ TỊCH (CHAIRMAN APPROVAL DECK)
+// =========================================================================
+
+enum ApprovalGateType {
+  GATE_1_QUOTE             // Duyệt báo giá & phương án gói
+  GATE_2_SANDBOX_DEMO      // Duyệt bản Live Sandbox trước khi gửi khách
+  GATE_3_CONTRACT_INVOICE  // Duyệt hợp đồng, phụ lục & xác nhận cọc 50%
+  GATE_4_HANDOVER_RELEASE  // Duyệt bàn giao bản thật sau khi thu đủ 100%
+  DAILY_MARKETING_VIDEO    // Duyệt kịch bản/video TikTok, Reels hằng ngày
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REVISION_REQUESTED
+}
+
+model ChairmanApprovalItem {
+  id               String           @id @default(cuid())
+  projectId        String?
+  project          ClientProject?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  gateType         ApprovalGateType
+  title            String
+  threeLineSummary String
+  previewUrl       String?
+  payloadJson      Json
+  riskWarning      String?          // Cảnh báo từ Pháp lý (B03) hoặc Kế toán (B04)
+  submittedByAgent String           // e.g. "B02-lead-concierge", "B01-growth-director"
+  status           ApprovalStatus   @default(PENDING)
+  chairmanNote     String?
+  signedHash       String?          // Chữ ký băm mật mã SHA-256 sau khi ký
+  decidedAt        DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([status, gateType])
+  @@index([submittedByAgent, createdAt])
+}
+
+// =========================================================================
+// 4. NHÓM 4: SỔ KẾ TOÁN TẤT ĐỊNH & TRẦN CHI PHÍ (LEDGER TRANSACTIONS & BUDGET)
+// =========================================================================
+
+enum LedgerEntryType {
+  REVENUE_SETUP_DEPOSIT_50 // Thu cọc 50%
+  REVENUE_SETUP_FINAL_50   // Thu hoàn tất 50%
+  REVENUE_MONTHLY_RETAINER // Phí duy trì tháng (390k/490k)
+  REVENUE_CHATBOT_TOPUP    // Nạp gói tin nhắn thêm (100k = 5000 msgs)
+  EXPENSE_AI_API           // Chi phí token API LLM
+  EXPENSE_INFRA_HOSTING    // Chi phí Cloud Hosting
+}
+
+model LedgerTransaction {
+  id            String          @id @default(cuid())
+  projectId     String?
+  project       ClientProject?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  entryType     LedgerEntryType
+  amountVnd     Int             // Số tiền VNĐ
+  description   String
+  referenceCode String?         // Mã tham chiếu thanh toán (VietQR, Bank Ref)
+  payerOrVendor String          // Khách hàng nộp hoặc Nhà cung cấp dịch vụ
+  occurredAt    DateTime        @default(now())
+  createdAt     DateTime        @default(now())
+
+  @@index([entryType, occurredAt])
+  @@index([projectId, entryType])
+}
+
+model MonthlyBudgetMonitor {
+  id                         String   @id @default(cuid())
+  monthYear                  String   @unique // Định dạng "YYYY-MM", ví dụ "2026-10"
+  totalRevenueVnd            Int      @default(0)
+  totalExpenseVnd            Int      @default(0)
+  expenseCapVnd              Int      @default(1000000) // Trần cứng 1.000.000 VNĐ/tháng
+  warningThresholdVnd        Int      @default(700000)  // Cảnh báo vàng 700.000 VNĐ
+  annualCumulativeRevenueVnd BigInt   @default(0)       // Doanh thu lũy kế năm
+  annualRevenueCapVnd        BigInt   @default(1000000000) // Trần 1 Tỷ VNĐ (NĐ 141/2026)
+  isWarningTriggered         Boolean  @default(false)
+  isHardCapExceeded          Boolean  @default(false)
+  updatedAt                  DateTime @updatedAt
+
+  @@index([monthYear])
+}
+
+// =========================================================================
+// 5. NHÓM 5: KIỂM SOÁT HẠN MỨC CHATBOT KHÁCH HÀNG (TENANT CHATBOT QUOTA)
+// =========================================================================
+
+model TenantChatbotQuota {
+  id                   String        @id @default(cuid())
+  projectId            String        @unique
+  project              ClientProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  monthlyMessageLimit  Int           @default(3000) // Mặc định 3.000 tin nhắn/tháng trong gói 490k
+  messagesUsed         Int           @default(0)
+  topUpBalanceMessages Int           @default(0)    // Tin nhắn nạp thêm (100k = 5.000)
+  hardCapReached       Boolean       @default(false) // Tự động khóa gọi LLM khi chạm trần
+  resetAt              DateTime                     // Ngày làm mới hạn mức tháng
+  lastTopUpAt          DateTime?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  @@index([hardCapReached])
+}
+
+// =========================================================================
+// 6. NHÓM 6: HỆ THỐNG 5 NGƯỠNG CẢNH BÁO ĐỎ CỦA CHỦ TỊCH (ANOMALY ALERTS)
+// =========================================================================
+
+enum AlertSeverity {
+  CRITICAL
+  WARNING
+}
+
+enum AlertCategory {
+  EXPENSE_EXCEEDED             // Chi phí AI/Cloud vượt 700k hoặc chạm trần 1tr
+  QUOTA_EXCEEDED               // Khách dùng quá 85% hạn mức tin nhắn
+  RETAINER_OVERDUE             // Trễ phí duy trì quá 5 ngày
+  CUSTOMER_COMPLAINT_OR_5XX    // Khách nhắn từ khóa khiếu nại hoặc lỗi 5xx
+  ANNUAL_REVENUE_THRESHOLD     // Doanh thu năm chạm ngưỡng 800 triệu (80% mức 1 tỷ)
+}
+
+model AnomalyAlert {
+  id          String         @id @default(cuid())
+  projectId   String?
+  project     ClientProject? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  category    AlertCategory
+  severity    AlertSeverity  @default(WARNING)
+  title       String
+  message     String
+  metadata    Json?
+  isResolved  Boolean        @default(false)
+  resolvedAt  DateTime?
+  createdAt   DateTime       @default(now())
+
+  @@index([severity, isResolved])
+  @@index([category, createdAt])
+}
+
+// =========================================================================
+// PHỤ LỤC: NHẬT KÝ ĐỒNG Ý THEO NGHỊ ĐỊNH 13/2023/NĐ-CP (CONSENT AUDIT LOG)
+// =========================================================================
+
 model ConsentAuditLog {
-  id          String   @id @default(cuid())
-  subjectId   String
-  consentType String
-  granted     Boolean
-  ipAddress   String?
-  createdAt   DateTime @default(now())
+  id             String   @id @default(cuid())
+  subjectId      String   // Số điện thoại hoặc Cookie ID của người dùng
+  consentType    String   // Mục đích thu thập dữ liệu (ví dụ: "GYM_LEAD_CONSULTATION")
+  granted        Boolean  // Đồng ý tường minh
+  ipAddress      String?
+  userAgent      String?
+  dataCategories String?  // "NAME,PHONE,BMI_TDEE"
+  createdAt      DateTime @default(now())
 
   @@index([subjectId, createdAt])
+  @@index([consentType, granted])
 }

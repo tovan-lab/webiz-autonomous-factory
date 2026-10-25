@@ -40,10 +40,19 @@ export function auditSourceCode(content, relPath) {
 
   // Phát hiện bài kiểm thử rỗng không có mệnh đề kiểm chứng (expect / assert)
   if (relPath.includes('.spec.') || relPath.includes('.test.')) {
-    const testBlockRx = /\b(?:it|test)\s*\(\s*""\s*,\s*(?:async\s*)?\([^)]*\)\s*=>\s*\{([\s\S]*?)\}\s*\)/g;
+    const itHeaderRx = /\b(?:it|test)\s*\(\s*(?:""|['"`][\s\S]*?['"`])\s*,\s*(?:async\s*)?\([^)]*\)\s*=>\s*\{/g;
     let match;
-    while ((match = testBlockRx.exec(stripped)) !== null) {
-      const body = match[1].trim();
+    while ((match = itHeaderRx.exec(stripped)) !== null) {
+      const startIndex = match.index + match[0].length;
+      let depth = 1;
+      let endIndex = startIndex;
+      while (endIndex < stripped.length && depth > 0) {
+        const ch = stripped[endIndex];
+        if (ch === '{') depth++;
+        else if (ch === '}') depth--;
+        endIndex++;
+      }
+      const body = stripped.slice(startIndex, endIndex - 1).trim();
       if (!body || !/\b(?:expect|assert|expectTypeOf)\b/.test(body)) {
         issues.push({ ruleId: 'AST-EMPTY-TEST', file: relPath, detail: 'Phát hiện hàm kiểm thử it()/test() rỗng hoặc không chứa mệnh đề expect()/assert!' });
       }

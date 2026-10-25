@@ -1,5 +1,13 @@
 {
   "brand": "Webiz - Web For Your Biz",
+  "founder": "Phạm Trọng (https://phamtrong.click)",
+  "version": "5.0.0",
+  "accessibility": {
+    "standard": "WCAG-2.1-AA",
+    "reduced_motion_fallback": "static_isometric_2d",
+    "min_contrast_ratio": 4.5,
+    "focus_ring_color": "#0DEEF3"
+  },
   "required_states": [
     "loading_skeleton",
     "empty_state",
@@ -10,5 +18,92 @@
     "vi-VN",
     "en-US"
   ],
-  "accessibility": "WCAG-2.1-AA"
+  "theme_profiles": {
+    "webiz_spatial_office_standard": {
+      "name": "Webiz 3D Virtual Office (Daylight Operations)",
+      "background_void": "#070B14",
+      "surface_glass": "rgba(15, 23, 42, 0.75)",
+      "surface_card": "#0F172A",
+      "surface_elevated": "#1E293B",
+      "border_glass": "rgba(13, 238, 243, 0.25)",
+      "border_subtle": "#334155",
+      "accent_primary": "#0DEEF3",
+      "accent_secondary": "#7928CA",
+      "accent_magenta": "#FF007A",
+      "accent_amber": "#FFB800",
+      "accent_green": "#00F5A0",
+      "text_primary": "#F8FAFC",
+      "text_secondary": "#94A3B8",
+      "text_muted": "#64748B",
+      "danger_red": "#EF4444"
+    },
+    "webiz_cyberpunk_lights_off": {
+      "name": "Webiz Cyberpunk 'LIGHTS OFF' Screen Recording Mode",
+      "background_void": "#030408",
+      "surface_glass": "rgba(5, 7, 14, 0.88)",
+      "surface_card": "#060913",
+      "surface_elevated": "#0B1020",
+      "border_glass": "rgba(13, 238, 243, 0.45)",
+      "border_subtle": "rgba(255, 0, 122, 0.35)",
+      "accent_primary": "#0DEEF3",
+      "accent_secondary": "#FF007A",
+      "accent_magenta": "#FF007A",
+      "accent_amber": "#FFB800",
+      "accent_green": "#00F5A0",
+      "text_primary": "#FFFFFF",
+      "text_secondary": "#CBD5E1",
+      "text_muted": "#64748B",
+      "danger_red": "#FF3366",
+      "ambient_light_intensity": 0.12,
+      "neon_bloom_intensity": 1.6
+    },
+    "gym_3d_showcase": {
+      "name": "Iron House 3D Fitness Sandbox Theme",
+      "background_void": "#090D16",
+      "surface_card": "#0F172A",
+      "surface_glass": "rgba(15, 23, 42, 0.80)",
+      "accent_primary": "#0DEEF3",
+      "accent_voltage": "#10B981",
+      "accent_orange": "#F97316",
+      "accent_magenta": "#FF007A",
+      "text_primary": "#F8FAFC",
+      "text_secondary": "#94A3B8"
+    }
+  },
+  "spatial_3d_engine": {
+    "single_canvas_rule": true,
+    "canvas_dpr": [1, 1.5],
+    "frameloop": "demand",
+    "frameloop_active_interactive": "always",
+    "shadows": "soft",
+    "max_initial_payload_bytes": 1887436,
+    "compression_formats": ["draco", "meshopt"],
+    "lod_distances": {
+      "high_detail_meters": 5,
+      "medium_detail_meters": 15,
+      "low_detail_meters": 30
+    },
+    "camera_defaults": {
+      "office_isometric": {
+        "position": [18, 22, 24],
+        "fov": 45,
+        "lookAt": [0, 0, 0]
+      },
+      "gym_hero": {
+        "position": [0, 2.5, 6],
+        "fov": 50,
+        "lookAt": [0, 1.2, 0]
+      }
+    }
+  },
+  "typography": {
+    "font_display": "'Space Grotesk', 'Inter', sans-serif",
+    "font_body": "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    "font_code": "'JetBrains Mono', monospace"
+  },
+  "glassmorphism": {
+    "backdrop_blur": "16px",
+    "border_width": "1px",
+    "box_shadow_glow": "0 0 25px rgba(13, 238, 243, 0.15)"
+  }
 }

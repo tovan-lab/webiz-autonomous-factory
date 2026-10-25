@@ -9,6 +9,7 @@
         ".antigravity/locks/**"
       ],
       "forbidden_scope": [
+        "contracts/HUMAN_SIGN_OFF.json",
         "workspace/**",
         "inquisitor-vault/traceability-status.json"
       ]

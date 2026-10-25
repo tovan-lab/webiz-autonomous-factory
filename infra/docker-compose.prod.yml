@@ -1,0 +1,33 @@
+services:
+  webiz-postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-webiz_prod}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-webiz_secure_production_password}
+      POSTGRES_DB: ${POSTGRES_DB:-webiz_production_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U webiz_prod -d webiz_production_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  webiz-backend:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.backend
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-webiz_prod}:${POSTGRES_PASSWORD:-webiz_secure_production_password}@webiz-postgres:5432/${POSTGRES_DB:-webiz_production_db}
+    ports:
+      - "3000:3000"
+    depends_on:
+      webiz-postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

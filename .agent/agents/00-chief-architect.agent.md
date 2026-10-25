@@ -6,6 +6,7 @@ write_scope:
   - .agent/locks/contracts.sha256
   - .antigravity/locks/contracts.sha256
 forbidden_scope:
+  - contracts/HUMAN_SIGN_OFF.json
   - workspace/**
   - inquisitor-vault/traceability-status.json
 ---

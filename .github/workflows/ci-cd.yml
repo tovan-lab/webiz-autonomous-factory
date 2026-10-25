@@ -18,6 +18,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Enforce Write Scope Isolation & Human Gate Protection
+        run: node scripts/harness/enforce-scope.mjs
+
       - name: Run 3-Stage Chaos Self-Test
         run: node scripts/harness/selftest-chaos.mjs
 

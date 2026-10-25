@@ -1,36 +1,292 @@
 openapi: 3.1.0
 info:
-  title: Webiz Contract-First API
-  version: 4.0.0
-  description: Standardized API with RFC 9457 Problem Details
+  title: Webiz Autonomous AI Workforce & 3D Spatial API
+  version: 5.0.0
+  description: >
+    Hợp đồng API chuẩn mực của hệ sinh thái Webiz (Web For Your Biz) điều hành bởi Chủ tịch Phạm Trọng.
+    Tuân thủ nghiêm ngặt định dạng báo lỗi RFC 9457 Problem Details (application/problem+json)
+    và cơ chế cưỡng chế Ledger Gate (khóa cọc 50% trước khi triển khai).
+
+servers:
+  - url: http://localhost:3000
+    description: Môi trường Kiểm thử / Local
+  - url: https://api.webiz.vn
+    description: Môi trường Production
+
 paths:
   /api/v1/healthz:
     get:
       operationId: getSystemHealth
-      summary: System Liveness & Readiness Probe
+      summary: System Liveness & Readiness Probe (REQ-001)
+      description: Kiểm tra độ sẵn sàng và sức khỏe toàn diện của hệ thống backend.
       responses:
         '200':
-          description: Service is healthy
+          description: Dịch vụ hoạt động ổn định
           content:
             application/json:
               schema:
-                type: object
-                required: [status, version, timestamp]
-                properties:
-                  status:
-                    type: string
-                    enum: [ok]
-                  version:
-                    type: string
-                  timestamp:
-                    type: string
-                    format: date-time
+                $ref: '#/components/schemas/HealthResponse'
         '500':
-          description: RFC 9457 Problem Details
+          description: Lỗi máy chủ theo chuẩn RFC 9457
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
+
+  /api/v1/office/state:
+    get:
+      operationId: getOfficeState
+      summary: Lấy trạng thái thời gian thực của Trụ sở 3D và 10 Nhân sự AI (REQ-002)
+      description: Cung cấp tọa độ 3D, trạng thái làm việc của 10 AI Agents, trạng thái Git .git/webiz-state/ và chỉ số KPI.
+      responses:
+        '200':
+          description: Trạng thái Trụ sở 3D hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfficeStateResponse'
+        '500':
+          description: Lỗi RFC 9457
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/v1/approvals/queue:
+    get:
+      operationId: getApprovalQueue
+      summary: Danh sách Hộp Duyệt 1-Chạm của Chủ tịch (REQ-003)
+      description: Lấy danh sách các đề xuất đang chờ Chủ tịch duyệt (4 Cổng duyệt + Luồng video marketing hằng ngày).
+      responses:
+        '200':
+          description: Danh sách đề xuất duyệt
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, pendingCount, totalCount]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ApprovalItem'
+                  pendingCount:
+                    type: integer
+                  totalCount:
+                    type: integer
+        '500':
+          description: Lỗi RFC 9457
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/v1/approvals/{id}/decide:
+    post:
+      operationId: decideApprovalItem
+      summary: Chủ tịch ghi nhận quyết định duyệt hoặc yêu cầu sửa đổi (REQ-003)
+      description: Ghi nhận quyết định APPROVED hoặc REVISION_REQUESTED kèm ghi chú và chữ ký băm mật mã SHA-256.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalDecisionRequest'
+      responses:
+        '200':
+          description: Quyết định đã được lưu vết thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalItem'
+        '400':
+          description: Yêu cầu không hợp lệ
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Không tìm thấy mục phê duyệt
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/v1/leads/intake:
+    post:
+      operationId: intakeLead
+      summary: Tiếp nhận Khách hàng Đa kênh & Sinh Sandbox 5 Phút (REQ-004)
+      description: Tiếp nhận thông tin khách mới (lọc mã độc prompt injection), phân loại ngành nghề, gợi ý gói dịch vụ và tạo cấu hình sandboxBrandConfig.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeadIntakeRequest'
+      responses:
+        '201':
+          description: Tiếp nhận khách và khởi tạo cấu hình Sandbox thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadIntakeResponse'
+        '400':
+          description: Dữ liệu đầu vào không hợp lệ hoặc chứa mã độc prompt injection
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/v1/projects/{id}/transition:
+    post:
+      operationId: transitionProjectStage
+      summary: Chuyển giai đoạn dự án CRM có cưỡng chế Ledger Gate (REQ-005)
+      description: Cưỡng chế chặn chuyển IN_PRODUCTION nếu chưa cọc 50%, chặn DELIVERED_PAID_100 nếu chưa trả đủ 100%. Trả về lỗi 409 Conflict chuẩn RFC 9457 nếu vi phạm.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectTransitionRequest'
+      responses:
+        '200':
+          description: Chuyển giai đoạn thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectTransitionResponse'
+        '400':
+          description: Sai cú pháp trạng thái
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Không tìm thấy dự án
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '409':
+          description: Xung đột Ledger Gate - Chưa đóng cọc 50% hoặc chưa thu đủ 100%
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/v1/ledger/summary:
+    get:
+      operationId: getLedgerSummary
+      summary: Báo cáo Dòng tiền Thực, Trần Chi phí và Doanh thu Lũy kế Năm (REQ-006)
+      description: Truy xuất tổng doanh thu thực, chi phí hoạt động tháng (đối chiếu trần 1 triệu VNĐ) và doanh thu năm đối chiếu ngưỡng 1 tỷ VNĐ (NĐ 141/2026/NĐ-CP).
+      responses:
+        '200':
+          description: Báo cáo dòng tiền hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LedgerSummaryResponse'
+        '500':
+          description: Lỗi RFC 9457
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/v1/ledger/transactions:
+    post:
+      operationId: createLedgerTransaction
+      summary: Ghi nhận giao dịch tài chính hoặc Nạp thêm hạn mức Chatbot (REQ-006, REQ-007)
+      description: Ghi nhận phiếu thu/chi thực tế và tự động cộng thêm hạn mức tin nhắn nếu là giao dịch REVENUE_CHATBOT_TOPUP.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LedgerTransactionRequest'
+      responses:
+        '201':
+          description: Giao dịch được lưu vào sổ cái thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LedgerTransactionResponse'
+        '400':
+          description: Dữ liệu giao dịch không hợp lệ
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/v1/sandbox/gym-preview:
+    get:
+      operationId: getGymSandboxPreview
+      summary: Lấy cấu hình thương hiệu động cho Live 3D Gym Sandbox (REQ-009)
+      description: Cung cấp thông số thương hiệu (tên, màu sắc, logo, bảng giá, gói tập) phục vụ trang tương tác 3D.
+      parameters:
+        - name: brand
+          in: query
+          required: false
+          schema:
+            type: string
+            default: IronHouseGym
+        - name: primaryColor
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "#0DEEF3"
+        - name: secondaryColor
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "#FF007A"
+      responses:
+        '200':
+          description: Cấu hình thương hiệu Live 3D Gym Sandbox
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GymPreviewResponse'
+
+  /api/v1/compliance/consent:
+    post:
+      operationId: recordConsent
+      summary: Ghi nhận sự đồng ý dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP (REQ-010)
+      description: Lưu vết nhật ký chấp thuận xử lý dữ liệu cá nhân của người dùng trước khi thu thập số điện thoại hoặc dữ liệu thể lực.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsentRequest'
+      responses:
+        '201':
+          description: Ghi nhận đồng ý thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentResponse'
+        '400':
+          description: Dữ liệu không hợp lệ
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
 components:
   schemas:
     ProblemDetails:
@@ -39,13 +295,318 @@ components:
       properties:
         type:
           type: string
+          example: "https://webiz.vn/errors/ledger-gate-conflict"
         title:
           type: string
+          example: "Ledger Gate Conflict"
         status:
           type: integer
+          example: 409
         detail:
           type: string
+          example: "Chặn sản xuất: Chưa xác nhận thanh toán cọc 50% vào sổ kế toán Webiz"
         instance:
           type: string
+          example: "/api/v1/projects/prj_123/transition"
         traceId:
           type: string
+          example: "trace-9a8b7c6d"
+
+    HealthResponse:
+      type: object
+      required: [status, version, timestamp]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        version:
+          type: string
+          example: "5.0.0"
+        timestamp:
+          type: string
+          format: date-time
+
+    AgentEmployeeState:
+      type: object
+      required: [agentCode, displayName, division, roleTitle, accentColorHex, deskZone, currentStatus, position]
+      properties:
+        agentCode:
+          type: string
+          example: "00-chief-architect"
+        displayName:
+          type: string
+          example: "Chief Architect"
+        division:
+          type: string
+          enum: [TECH_FACTORY, BIZ_OPS]
+        roleTitle:
+          type: string
+        accentColorHex:
+          type: string
+          example: "#0DEEF3"
+        deskZone:
+          type: string
+          enum: [ARCHITECT_DESK, ENGINEERING_BAY, QA_PODIUM, GROWTH_STUDIO, CONCIERGE_LOBBY, GOVERNANCE_VAULT]
+        currentStatus:
+          type: string
+          enum: [IDLE, WORKING, WAITING_CHAIRMAN_APPROVAL, IN_MEETING, BLOCKED_BY_HARNESS]
+        currentTaskSummary:
+          type: string
+        position:
+          type: object
+          required: [x, y, z]
+          properties:
+            x: { type: number }
+            y: { type: number }
+            z: { type: number }
+
+    OfficeStateResponse:
+      type: object
+      required: [agents, cyberpunkLightsOff, gitState, kpiMetrics, timestamp]
+      properties:
+        agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentEmployeeState'
+        cyberpunkLightsOff:
+          type: boolean
+          example: false
+        gitState:
+          type: object
+          properties:
+            currentStage: { type: string }
+            lastCheckpoint: { type: string }
+            uncommittedChanges: { type: integer }
+        kpiMetrics:
+          type: object
+          properties:
+            activeProjects: { type: integer }
+            pendingApprovals: { type: integer }
+            monthlyExpenseVnd: { type: integer }
+            annualRevenueVnd: { type: integer }
+        timestamp:
+          type: string
+          format: date-time
+
+    ApprovalItem:
+      type: object
+      required: [id, gateType, title, threeLineSummary, submittedByAgent, status, createdAt]
+      properties:
+        id:
+          type: string
+        projectId:
+          type: string
+        gateType:
+          type: string
+          enum: [GATE_1_QUOTE, GATE_2_SANDBOX_DEMO, GATE_3_CONTRACT_INVOICE, GATE_4_HANDOVER_RELEASE, DAILY_MARKETING_VIDEO]
+        title:
+          type: string
+        threeLineSummary:
+          type: string
+        previewUrl:
+          type: string
+        payloadJson:
+          type: object
+        riskWarning:
+          type: string
+        submittedByAgent:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, APPROVED, REVISION_REQUESTED]
+        chairmanNote:
+          type: string
+        signedHash:
+          type: string
+        decidedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    ApprovalDecisionRequest:
+      type: object
+      required: [decision, chairmanNote]
+      properties:
+        decision:
+          type: string
+          enum: [APPROVED, REVISION_REQUESTED]
+        chairmanNote:
+          type: string
+          example: "Đã duyệt phương án báo giá, tiến hành gửi cho khách."
+
+    LeadIntakeRequest:
+      type: object
+      required: [fullName, phoneNumber, brandName, sourceChannel, industry]
+      properties:
+        fullName:
+          type: string
+        phoneNumber:
+          type: string
+        email:
+          type: string
+        brandName:
+          type: string
+        sourceChannel:
+          type: string
+          enum: [FACEBOOK_MESSENGER, ZALO_OA, WEB_FORM, SCHEDULED_CALL]
+        industry:
+          type: string
+          enum: [GYM_FITNESS, SPA_BEAUTY, HOMESTAY_TRAVEL, FNB_RESTAURANT]
+        notes:
+          type: string
+
+    LeadIntakeResponse:
+      type: object
+      required: [leadId, projectId, suggestedTier, sandboxPreviewUrl, sandboxBrandConfig]
+      properties:
+        leadId:
+          type: string
+        projectId:
+          type: string
+        suggestedTier:
+          type: string
+          enum: [STARTER_3D, GROWTH_AI, PRO_AUTOMATION]
+        sandboxPreviewUrl:
+          type: string
+        sandboxBrandConfig:
+          type: object
+
+    ProjectTransitionRequest:
+      type: object
+      required: [targetStage]
+      properties:
+        targetStage:
+          type: string
+          enum: [NEW, CONTACTED, QUALIFIED, SANDBOX_READY, QUOTED, CONTRACT_SENT, DEPOSIT_50_PAID, IN_PRODUCTION, DELIVERED_PAID_100, LOST]
+        reason:
+          type: string
+
+    ProjectTransitionResponse:
+      type: object
+      required: [projectId, previousStage, currentStage, transitionedAt]
+      properties:
+        projectId:
+          type: string
+        previousStage:
+          type: string
+        currentStage:
+          type: string
+        transitionedAt:
+          type: string
+          format: date-time
+
+    LedgerSummaryResponse:
+      type: object
+      required: [monthYear, totalRevenueVnd, totalExpenseVnd, expenseCapVnd, annualCumulativeRevenueVnd, annualRevenueCapVnd, activeAlertCount]
+      properties:
+        monthYear:
+          type: string
+          example: "2026-10"
+        totalRevenueVnd:
+          type: integer
+        totalExpenseVnd:
+          type: integer
+        expenseCapVnd:
+          type: integer
+          example: 1000000
+        warningThresholdVnd:
+          type: integer
+          example: 700000
+        annualCumulativeRevenueVnd:
+          type: integer
+        annualRevenueCapVnd:
+          type: integer
+          example: 1000000000
+        activeAlertCount:
+          type: integer
+
+    LedgerTransactionRequest:
+      type: object
+      required: [entryType, amountVnd, description, payerOrVendor]
+      properties:
+        projectId:
+          type: string
+        entryType:
+          type: string
+          enum: [REVENUE_SETUP_DEPOSIT_50, REVENUE_SETUP_FINAL_50, REVENUE_MONTHLY_RETAINER, REVENUE_CHATBOT_TOPUP, EXPENSE_AI_API, EXPENSE_INFRA_HOSTING]
+        amountVnd:
+          type: integer
+        description:
+          type: string
+        referenceCode:
+          type: string
+        payerOrVendor:
+          type: string
+
+    LedgerTransactionResponse:
+      type: object
+      required: [transactionId, entryType, amountVnd, occurredAt]
+      properties:
+        transactionId:
+          type: string
+        projectId:
+          type: string
+        entryType:
+          type: string
+        amountVnd:
+          type: integer
+        occurredAt:
+          type: string
+          format: date-time
+
+    GymPreviewResponse:
+      type: object
+      required: [brandName, primaryColor, secondaryColor, heroTagline, hotlineOrZalo, packages, workoutZones]
+      properties:
+        brandName:
+          type: string
+        primaryColor:
+          type: string
+        secondaryColor:
+          type: string
+        heroTagline:
+          type: string
+        hotlineOrZalo:
+          type: string
+        packages:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              name: { type: string }
+              priceMonthlyVnd: { type: integer }
+              benefits: { type: array, items: { type: string } }
+        workoutZones:
+          type: array
+          items:
+            type: object
+            properties:
+              key: { type: string }
+              name: { type: string }
+              cameraTarget: { type: array, items: { type: number } }
+
+    ConsentRequest:
+      type: object
+      required: [subjectId, consentType, granted]
+      properties:
+        subjectId:
+          type: string
+        consentType:
+          type: string
+        granted:
+          type: boolean
+        dataCategories:
+          type: string
+
+    ConsentResponse:
+      type: object
+      required: [consentId, recordedAt]
+      properties:
+        consentId:
+          type: string
+        recordedAt:
+          type: string
+          format: date-time
